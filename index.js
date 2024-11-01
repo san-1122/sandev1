@@ -65,7 +65,7 @@ function broadcastScheduledMessage(message) {
     );
 }
 
-cron.schedule('42 23 * * *', () => {
+cron.schedule('51 12 * * *', () => {
     const datetime2 = ` ${datetime}/18.00น.`;
     const hyung = ` \nของ พี่หยง \n156.232.105.0/25 (vlan 565) \nbandwith : ปกติ(251M) \n156.232.105.128/25 (vlan 568) \n\n`;
     const nikky = ` ของ นิกกี้ \n156.232.106.0/25 (vlan 566) \nbandwith : ปกติ(432M) \n154.209.146.0/25 (vlan 567) \nbandwith : ปกติ(432M)\n156.232.106.128/25 (vlan 569)\nbandwith : ปกติ(432M)\n154.209.146.128/25 (vlan 570)\nbandwith : ปกติ(432M)\n\n`;
