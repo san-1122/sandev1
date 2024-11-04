@@ -19,7 +19,9 @@ const currentDate = new Date();
 const day = currentDate.getDate();         // วันที่ (1 - 31)
 const month = currentDate.getMonth() + 1;  // เดือน (1 - 12), +1 เพราะ getMonth() เริ่มจาก 0
 const year = currentDate.getFullYear();    // ปี (เช่น 2024)
-const datetime = `${day}/${month}/${year}`;
+const time = currentDate.getHours();
+const timeminit = currentDate.getMinutes();
+const datetime = `${day}/${month}/${year} / ${time}.${timeminit} น.`;
 const client = new line.Client(config);
 
 // Middleware สำหรับ parsing body ของ request
@@ -66,24 +68,46 @@ function broadcastScheduledMessage(message) {
 }
 
 cron.schedule('* * * * *', async () => {
-    const datetime2 = ` ${datetime}/18.00น.`;
+    const datetime2 = ` ${datetime}`;
     const hyung = ` \nของ พี่หยง \n156.232.105.0/25 (vlan 565) \nbandwith : ปกติ(251M) \n156.232.105.128/25 (vlan 568) \n\n`;
     const nikky = ` ของ นิกกี้ \n156.232.106.0/25 (vlan 566) \nbandwith : ปกติ(432M) \n154.209.146.0/25 (vlan 567) \nbandwith : ปกติ(432M)\n156.232.106.128/25 (vlan 569)\nbandwith : ปกติ(432M)\n154.209.146.128/25 (vlan 570)\nbandwith : ปกติ(432M)\n\n`;
     const sumBW = `รวม BW User = 1.74 G`;
     const message = datetime2 + hyung + nikky + sumBW;
-    const tokenAPI = '45f594f035722650e4423d4c5019a6b99e0bb498e374b41b89fd479d7ed092e0'
+    const email = "LL67565";
+    const password = "Admin@67565";
     function delay(time) {
         return new Promise(function (resolve) {
             setTimeout(resolve, time)
         });
     }
+    // const zabbixApiUrl = 'http://zabbix.cabletv.co.th/zabbix/api_jsonrpc.php?api';
+    // const apiToken = '45f594f035722650e4423d4c5019a6b99e0bb498e374b41b89fd479d7ed092e0'; // แทนที่ด้วย API Token ของคุณ
 
+    // async function getHost() {
+    //     try {
+    //         const response = await axios.post(zabbixApiUrl, {
+    //             jsonrpc: "2.0",
+    //             method: "host.get",
+    //             params: {
+    //                 output: ["hostid", "name"],
+    //             },
+    //             id: 1,
+    //             auth: apiToken,
+    //         });
+
+    //         console.log("Hosts:", response.data.result);
+    //     } catch (error) {
+    //         console.error("Error fetching hosts:", error);
+    //     }
+    // }
+
+    // getHost();
     try {
         await (async () => {
             const browser = await puppeteer.launch({
                 defaultViewport: {
                     width: 1280,
-                    height: 3300,
+                    height: 3000,
                 },
             });
 
@@ -93,8 +117,8 @@ cron.schedule('* * * * *', async () => {
             await page.goto("http://zabbix.cabletv.co.th/zabbix/index.php");
 
             // กรอกชื่อผู้ใช้และรหัสผ่าน
-            await page.type("#name", "LL67565"); // แก้ไขเป็นชื่อผู้ใช้จริง
-            await page.type("#password", "Admin@67565"); // แก้ไขเป็นรหัสผ่านจริง
+            await page.type("#name", email); // แก้ไขเป็นชื่อผู้ใช้จริง
+            await page.type("#password", password); // แก้ไขเป็นรหัสผ่านจริง
 
             // คลิกปุ่มล็อคอิน
             await page.click("#enter");
