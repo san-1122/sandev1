@@ -5,7 +5,7 @@ const cron = require('node-cron');
 const axios = require('axios');
 const puppeteer = require("puppeteer");
 const app = express();
-
+const sharp = require('sharp');
 // กำหนดค่า LINE Bot
 const config = {
     channelAccessToken: 'YlQsOdAPVZDZ9ZzjfJJZ+ZsUGy8PfTrI54tAWpuolw/CbT1dRr2lMsI+OFqGn4fLkE0UHLPBQxmIEuAKtno5oycoaRAYwVIM81pheR5QieXzKOI2lLxtgoDk6FkMCV1nqor2Xv766uGjqjlvljv6GwdB04t89/1O/w1cDnyilFU=',
@@ -80,28 +80,6 @@ cron.schedule('* * * * *', async () => {
             setTimeout(resolve, time)
         });
     }
-    // const zabbixApiUrl = 'http://zabbix.cabletv.co.th/zabbix/api_jsonrpc.php?api';
-    // const apiToken = '45f594f035722650e4423d4c5019a6b99e0bb498e374b41b89fd479d7ed092e0'; // แทนที่ด้วย API Token ของคุณ
-
-    // async function getHost() {
-    //     try {
-    //         const response = await axios.post(zabbixApiUrl, {
-    //             jsonrpc: "2.0",
-    //             method: "host.get",
-    //             params: {
-    //                 output: ["hostid", "name"],
-    //             },
-    //             id: 1,
-    //             auth: apiToken,
-    //         });
-
-    //         console.log("Hosts:", response.data.result);
-    //     } catch (error) {
-    //         console.error("Error fetching hosts:", error);
-    //     }
-    // }
-
-    // getHost();
     try {
         await (async () => {
             const browser = await puppeteer.launch({
@@ -134,6 +112,22 @@ cron.schedule('* * * * *', async () => {
 
             // แคปหน้าจอ
             await page.screenshot({ path: "zabbix-dashboard.png" });
+            sharp('zabbix-dashboard.png') // ไฟล์ภาพต้นฉบับ
+                .extract({ width: 1200, height: 950, left: 50, top: 300 }) // กำหนดขนาดและตำแหน่งที่ต้องการครอบ
+                .toFile('croppedM1.jpg') // บันทึกเป็นไฟล์ใหม่ชื่อ cropped.jpg
+            sharp('zabbix-dashboard.png') // ไฟล์ภาพต้นฉบับ
+                .extract({ width: 1200, height: 700, left: 50, top: 1250 }) // กำหนดขนาดและตำแหน่งที่ต้องการครอบ
+                .toFile('croppedM2.jpg') // บันทึกเป็นไฟล์ใหม่ชื่อ cropped.jpg
+            sharp('zabbix-dashboard.png') // ไฟล์ภาพต้นฉบับ
+                .extract({ width: 1200, height: 1050, left: 50, top: 1950 }) // กำหนดขนาดและตำแหน่งที่ต้องการครอบ
+                .toFile('croppedM3.jpg') // บันทึกเป็นไฟล์ใหม่ชื่อ cropped.jpg
+                .then(() => {
+                    console.log('ภาพคอปและบันทึกสำเร็จ!');
+                })
+                .catch(err => {
+                    console.error('เกิดข้อผิดพลาด:', err);
+                });
+
 
             await browser.close();
         })();
