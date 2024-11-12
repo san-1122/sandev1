@@ -7,7 +7,7 @@ const puppeteer = require("puppeteer");
 const app = express();
 const sharp = require('sharp');
 const cloudinary = require('cloudinary').v2;
-
+const Tesseract = require('tesseract.js');
 // กำหนดค่า LINE Bot
 const config = {
     channelAccessToken: 'YlQsOdAPVZDZ9ZzjfJJZ+ZsUGy8PfTrI54tAWpuolw/CbT1dRr2lMsI+OFqGn4fLkE0UHLPBQxmIEuAKtno5oycoaRAYwVIM81pheR5QieXzKOI2lLxtgoDk6FkMCV1nqor2Xv766uGjqjlvljv6GwdB04t89/1O/w1cDnyilFU=',
@@ -88,12 +88,8 @@ function broadcastScheduledMessage(message, uploadResult11, uploadResult12, uplo
     );
 }
 
-cron.schedule('* * * * *', async () => {
-    const datetime2 = ` ${datetime}`;
-    const hyung = ` \nของ พี่หยง \n156.232.105.0/25 (vlan 565) \nbandwith : ปกติ(251M) \n156.232.105.128/25 (vlan 568) \n\n`;
-    const nikky = ` ของ นิกกี้ \n156.232.106.0/25 (vlan 566) \nbandwith : ปกติ(432M) \n154.209.146.0/25 (vlan 567) \nbandwith : ปกติ(432M)\n156.232.106.128/25 (vlan 569)\nbandwith : ปกติ(432M)\n154.209.146.128/25 (vlan 570)\nbandwith : ปกติ(432M)\n\n`;
-    const sumBW = `รวม BW User = 1.74 G`;
-    const message = datetime2 + hyung + nikky + sumBW;
+cron.schedule('0 0,3,6,9,12,15,18,21 * * *', async () => {
+
     const email = "LL67565";
     const password = "Admin@67565";
     const image1 = './croppedM1.jpg';
@@ -136,15 +132,36 @@ cron.schedule('* * * * *', async () => {
 
             // แคปหน้าจอ
             await page.screenshot({ path: "zabbix-dashboard.png" });
-            sharp('zabbix-dashboard.png') // ไฟล์ภาพต้นฉบับ
-                .extract({ width: 1200, height: 950, left: 50, top: 300 }) // กำหนดขนาดและตำแหน่งที่ต้องการครอบ
-                .toFile('croppedM1.jpg') // บันทึกเป็นไฟล์ใหม่ชื่อ cropped.jpg
-            sharp('zabbix-dashboard.png') // ไฟล์ภาพต้นฉบับ
-                .extract({ width: 1200, height: 700, left: 50, top: 1250 }) // กำหนดขนาดและตำแหน่งที่ต้องการครอบ
-                .toFile('croppedM2.jpg') // บันทึกเป็นไฟล์ใหม่ชื่อ cropped.jpg
-            sharp('zabbix-dashboard.png') // ไฟล์ภาพต้นฉบับ
-                .extract({ width: 1200, height: 1050, left: 50, top: 1950 }) // กำหนดขนาดและตำแหน่งที่ต้องการครอบ
-                .toFile('croppedM3.jpg') // บันทึกเป็นไฟล์ใหม่ชื่อ cropped.jpg
+            sharp('zabbix-dashboard.png')
+                .extract({ width: 1200, height: 950, left: 50, top: 300 })
+                .toFile('croppedM1.jpg')
+            sharp('zabbix-dashboard.png')
+                .extract({ width: 1200, height: 700, left: 50, top: 1250 })
+                .toFile('croppedM2.jpg')
+            sharp('zabbix-dashboard.png')
+                .extract({ width: 1200, height: 1050, left: 50, top: 1950 })
+                .toFile('croppedM3.jpg')
+            sharp('zabbix-dashboard.png')
+                .extract({ width: 90, height: 15, left: 769, top: 730 })
+                .toFile('text1.jpg')
+            sharp('zabbix-dashboard.png')
+                .extract({ width: 90, height: 15, left: 780, top: 1150 })
+                .toFile('text2.jpg')
+            sharp('zabbix-dashboard.png')
+                .extract({ width: 90, height: 15, left: 769, top: 1500 })
+                .toFile('text3.jpg')
+            sharp('zabbix-dashboard.png')
+                .extract({ width: 90, height: 15, left: 780, top: 1850 })
+                .toFile('text4.jpg')
+            sharp('zabbix-dashboard.png')
+                .extract({ width: 90, height: 15, left: 769, top: 2200 })
+                .toFile('text5.jpg')
+            sharp('zabbix-dashboard.png')
+                .extract({ width: 90, height: 15, left: 780, top: 2550 })
+                .toFile('text6.jpg')
+            sharp('zabbix-dashboard.png')
+                .extract({ width: 90, height: 15, left: 605, top: 2915 })
+                .toFile('text7.jpg')
                 .then(() => {
                     console.log('ภาพคอปและบันทึกสำเร็จ!');
                 })
@@ -186,14 +203,44 @@ cron.schedule('* * * * *', async () => {
         console.log("san22", uploadResult1.secure_url);
         // console.log(uploadResult2.url);
         // console.log(uploadResult3.url);
-
-        const uploadResult11 = uploadResult1.secure_url;
-        const uploadResult12 = uploadResult2.secure_url;
-        const uploadResult13 = uploadResult3.secure_url;
-        broadcastScheduledMessage(message, uploadResult11, uploadResult12, uploadResult13)
-            .then(() => console.log('ส่งข้อความ Broadcast สำเร็จที่เวลา 10:26 น.'))
-            .catch((error) => console.error('เกิดข้อผิดพลาด:', error));
-
+        const imageFiles = [
+            'text1.jpg',
+            'text2.jpg',
+            'text3.jpg',
+            'text4.jpg',
+            'text5.jpg',
+            'text6.jpg',
+            'text7.jpg'
+        ];
+        Promise.all(
+            imageFiles.map((imageFile, index) =>
+                Tesseract.recognize(
+                    imageFile,
+                    'eng',
+                    {
+                        logger: m => console.log(`กำลังแปลงภาพที่ ${index + 1}: ${imageFile}`)
+                    }
+                ).then(({ data: { text } }) => text)
+            )
+        ).then(texts => {
+            // รวมข้อความทั้งหมดในตัวแปรเดียว
+            const allTexts = texts.join('\n');
+            console.log("ข้อความที่ได้จากภาพทั้งหมด:");
+            console.log(allTexts);
+            const datetime2 = ` ${datetime}`;
+            const hyung = ` \nของ พี่หยง \n156.232.105.0/25 (vlan 565) \nbandwith :ปกติ ${texts[0]} 156.232.105.128/25 (vlan 568) \nbandwith :ปกติ ${texts[1]} \n`;
+            const nikky = ` ของ นิกกี้ \n156.232.106.0/25 (vlan 566) \nbandwith :ปกติ ${texts[2]} 154.209.146.0/25 (vlan 567) \nbandwith :ปกติ ${texts[3]}156.232.106.128/25 (vlan 569)\nbandwith :ปกติ ${texts[4]}154.209.146.128/25 (vlan 570)\nbandwith :ปกติ ${texts[5]}\n`;
+            const sumBW = `รวม BW User = ${texts[6]}`;
+            const message = datetime2 + hyung + nikky + sumBW;
+            const uploadResult11 = uploadResult1.secure_url;
+            const uploadResult12 = uploadResult2.secure_url;
+            const uploadResult13 = uploadResult3.secure_url;
+            broadcastScheduledMessage(message, uploadResult11, uploadResult12, uploadResult13)
+                .then(() => console.log('ส่งข้อความ Broadcast สำเร็จ'))
+                .catch((error) => console.error('เกิดข้อผิดพลาด:', error));
+        }).catch(error => {
+            console.error("เกิดข้อผิดพลาด:", error);
+        });
 
     } catch (error) {
         console.error('เกิดข้อผิดพลาด:', error);
