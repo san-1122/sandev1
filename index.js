@@ -7,7 +7,7 @@ const puppeteer = require("puppeteer");
 const app = express();
 const sharp = require('sharp');
 const cloudinary = require('cloudinary').v2;
-
+const Tesseract = require('tesseract.js');
 // กำหนดค่า LINE Bot
 const config = {
     channelAccessToken: 'YlQsOdAPVZDZ9ZzjfJJZ+ZsUGy8PfTrI54tAWpuolw/CbT1dRr2lMsI+OFqGn4fLkE0UHLPBQxmIEuAKtno5oycoaRAYwVIM81pheR5QieXzKOI2lLxtgoDk6FkMCV1nqor2Xv766uGjqjlvljv6GwdB04t89/1O/w1cDnyilFU=',
@@ -99,6 +99,7 @@ cron.schedule('* * * * *', async () => {
     const image1 = './croppedM1.jpg';
     const image2 = './croppedM2.jpg';
     const image3 = './croppedM3.jpg';
+    const moniter1 = 'text1.jpg';
     function delay(time) {
         return new Promise(function (resolve) {
             setTimeout(resolve, time)
@@ -145,6 +146,27 @@ cron.schedule('* * * * *', async () => {
             sharp('zabbix-dashboard.png') // ไฟล์ภาพต้นฉบับ
                 .extract({ width: 1200, height: 1050, left: 50, top: 1950 }) // กำหนดขนาดและตำแหน่งที่ต้องการครอบ
                 .toFile('croppedM3.jpg') // บันทึกเป็นไฟล์ใหม่ชื่อ cropped.jpg
+            sharp('zabbix-dashboard.png') // ไฟล์ภาพต้นฉบับ
+                .extract({ width: 90, height: 15, left: 769, top: 730 }) // กำหนดขนาดและตำแหน่งที่ต้องการครอบ
+                .toFile('text1.jpg')
+            sharp('zabbix-dashboard.png') // ไฟล์ภาพต้นฉบับ
+                .extract({ width: 90, height: 15, left: 780, top: 1150 }) // กำหนดขนาดและตำแหน่งที่ต้องการครอบ
+                .toFile('text2.jpg')
+            sharp('zabbix-dashboard.png') // ไฟล์ภาพต้นฉบับ
+                .extract({ width: 90, height: 15, left: 769, top: 1500 }) // กำหนดขนาดและตำแหน่งที่ต้องการครอบ
+                .toFile('text3.jpg')
+            sharp('zabbix-dashboard.png') // ไฟล์ภาพต้นฉบับ
+                .extract({ width: 90, height: 15, left: 780, top: 1850 }) // กำหนดขนาดและตำแหน่งที่ต้องการครอบ
+                .toFile('text4.jpg')
+            sharp('zabbix-dashboard.png') // ไฟล์ภาพต้นฉบับ
+                .extract({ width: 90, height: 15, left: 769, top: 2200 }) // กำหนดขนาดและตำแหน่งที่ต้องการครอบ
+                .toFile('text5.jpg')
+            sharp('zabbix-dashboard.png') // ไฟล์ภาพต้นฉบับ
+                .extract({ width: 90, height: 15, left: 780, top: 2550 }) // กำหนดขนาดและตำแหน่งที่ต้องการครอบ
+                .toFile('text6.jpg')
+            sharp('zabbix-dashboard.png') // ไฟล์ภาพต้นฉบับ
+                .extract({ width: 90, height: 15, left: 605, top: 2915 }) // กำหนดขนาดและตำแหน่งที่ต้องการครอบ
+                .toFile('text7.jpg')
                 .then(() => {
                     console.log('ภาพคอปและบันทึกสำเร็จ!');
                 })
@@ -186,14 +208,35 @@ cron.schedule('* * * * *', async () => {
         console.log("san22", uploadResult1.secure_url);
         // console.log(uploadResult2.url);
         // console.log(uploadResult3.url);
-
+        const imageFiles = [
+            'text1.jpg',
+            'text2.jpg',
+            'text3.jpg',
+            'text4.jpg',
+            'text5.jpg',
+            'text6.jpg',
+            'text7.jpg'
+        ];
+        imageFiles.forEach((imageFile, index) => {
+            Tesseract.recognize(
+                imageFile, // ใช้ชื่อไฟล์แต่ละตัวจากลูป
+                'eng', // ภาษา
+                {
+                    logger: m => console.log(`กำลังแปลงภาพที่ ${index + 1}: ${imageFile}`) // แสดงสถานะการประมวลผล
+                }
+            ).then(({ data: { text } }) => {
+                console.log(`ข้อความที่ตรวจพบในภาพ ${imageFile}:`);
+                console.log(text); // แสดงผลข้อความที่ดึงออกมาจากภาพ
+            }).catch(error => {
+                console.error(`เกิดข้อผิดพลาดกับภาพ ${imageFile}:`, error); // จัดการข้อผิดพลาด
+            });
+        });
         const uploadResult11 = uploadResult1.secure_url;
         const uploadResult12 = uploadResult2.secure_url;
         const uploadResult13 = uploadResult3.secure_url;
         broadcastScheduledMessage(message, uploadResult11, uploadResult12, uploadResult13)
             .then(() => console.log('ส่งข้อความ Broadcast สำเร็จที่เวลา 10:26 น.'))
             .catch((error) => console.error('เกิดข้อผิดพลาด:', error));
-
 
     } catch (error) {
         console.error('เกิดข้อผิดพลาด:', error);
