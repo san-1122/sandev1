@@ -88,7 +88,7 @@ function broadcastScheduledMessage(message, uploadResult11, uploadResult12, uplo
     );
 }
 
-cron.schedule('* * * * *', async () => {
+cron.schedule('0 0,3,6,9,12,15,18,21 * * *', async () => {
 
     const email = "LL67565";
     const password = "Admin@67565";
