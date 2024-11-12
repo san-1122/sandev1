@@ -6,11 +6,20 @@ const axios = require('axios');
 const puppeteer = require("puppeteer");
 const app = express();
 const sharp = require('sharp');
+const cloudinary = require('cloudinary').v2;
+
 // กำหนดค่า LINE Bot
 const config = {
     channelAccessToken: 'YlQsOdAPVZDZ9ZzjfJJZ+ZsUGy8PfTrI54tAWpuolw/CbT1dRr2lMsI+OFqGn4fLkE0UHLPBQxmIEuAKtno5oycoaRAYwVIM81pheR5QieXzKOI2lLxtgoDk6FkMCV1nqor2Xv766uGjqjlvljv6GwdB04t89/1O/w1cDnyilFU=',
     channelSecret: 'ec5dd65b9cb56ed5b24a0a54ef9a94fb'
 };
+
+// กําหนดค่า Cloudinary เพื่อเชื่อมต่อ cloudinary
+cloudinary.config({
+    cloud_name: 'dnfcx8tdk',
+    api_key: '354162211182455',
+    api_secret: 'KI6Thg_n3ora-Iy2SSMsSieNVtQ' // Click 'View API Keys' above to copy your API secret
+});
 
 // สร้างตัวแปรวันที่ปัจจุบัน
 const currentDate = new Date();
@@ -47,7 +56,7 @@ function handleEvent(event) {
     return Promise.resolve(null);
 }
 
-function broadcastScheduledMessage(message) {
+function broadcastScheduledMessage(message, uploadResult11, uploadResult12, uploadResult13) {
     return axios.post(
         'https://api.line.me/v2/bot/message/broadcast',
         {
@@ -55,7 +64,19 @@ function broadcastScheduledMessage(message) {
                 {
                     type: 'text',
                     text: message,
-                },
+                }, {
+                    type: "image",
+                    originalContentUrl: uploadResult11,
+                    previewImageUrl: uploadResult11
+                }, {
+                    type: "image",
+                    originalContentUrl: uploadResult12,
+                    previewImageUrl: uploadResult12
+                }, {
+                    type: "image",
+                    originalContentUrl: uploadResult13,
+                    previewImageUrl: uploadResult13
+                }
             ],
         },
         {
@@ -75,6 +96,9 @@ cron.schedule('* * * * *', async () => {
     const message = datetime2 + hyung + nikky + sumBW;
     const email = "LL67565";
     const password = "Admin@67565";
+    const image1 = './croppedM1.jpg';
+    const image2 = './croppedM2.jpg';
+    const image3 = './croppedM3.jpg';
     function delay(time) {
         return new Promise(function (resolve) {
             setTimeout(resolve, time)
@@ -129,13 +153,48 @@ cron.schedule('* * * * *', async () => {
                 });
 
 
+
             await browser.close();
         })();
+        const uploadResult1 = await cloudinary.uploader
+            .upload(
+                image1, {
+                public_id: 'shoes1',
+            }
+            )
+            .catch((error) => {
+                console.log(error);
+            });
+        const uploadResult2 = await cloudinary.uploader
+            .upload(
+                image2, {
+                public_id: 'shoes2',
+            }
+            )
+            .catch((error) => {
+                console.log(error);
+            });
+        const uploadResult3 = await cloudinary.uploader
+            .upload(
+                image3, {
+                public_id: 'shoes3',
+            }
+            )
+            .catch((error) => {
+                console.log(error);
+            });
+        console.log("san22", uploadResult1.secure_url);
+        // console.log(uploadResult2.url);
+        // console.log(uploadResult3.url);
 
-
-        broadcastScheduledMessage(message)
+        const uploadResult11 = uploadResult1.secure_url;
+        const uploadResult12 = uploadResult2.secure_url;
+        const uploadResult13 = uploadResult3.secure_url;
+        broadcastScheduledMessage(message, uploadResult11, uploadResult12, uploadResult13)
             .then(() => console.log('ส่งข้อความ Broadcast สำเร็จที่เวลา 10:26 น.'))
             .catch((error) => console.error('เกิดข้อผิดพลาด:', error));
+
+
     } catch (error) {
         console.error('เกิดข้อผิดพลาด:', error);
     }
