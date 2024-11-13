@@ -88,7 +88,7 @@ function broadcastScheduledMessage(message, uploadResult11, uploadResult12, uplo
     );
 }
 
-cron.schedule('* * * * *', async () => {
+cron.schedule('0 0,3,6,9,12,15,18,21 * * *', async () => {
 
     const email = "LL67565";
     const password = "Admin@67565";
@@ -128,7 +128,7 @@ cron.schedule('* * * * *', async () => {
             await page.goto("http://zabbix.cabletv.co.th/zabbix/zabbix.php?action=dashboard.view&dashboardid=388");
 
             // รอ 7 วินาทีก่อนแคปหน้าจอ
-            await delay(7000);
+            await delay(2000);
 
             // แคปหน้าจอ
             await page.screenshot({ path: "zabbix-dashboard.png" });
