@@ -128,7 +128,7 @@ cron.schedule('* * * * *', async () => {
             await page.goto("http://zabbix.cabletv.co.th/zabbix/zabbix.php?action=dashboard.view&dashboardid=388");
 
             // รอ 7 วินาทีก่อนแคปหน้าจอ
-            await delay(4000);
+            await delay(7000);
 
             // แคปหน้าจอ
             await page.screenshot({ path: "zabbix-dashboard.png" });
