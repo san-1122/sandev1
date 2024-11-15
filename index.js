@@ -1,18 +1,14 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const line = require('@line/bot-sdk');
 const cron = require('node-cron');
-const axios = require('axios');
 const puppeteer = require("puppeteer");
 const app = express();
 const sharp = require('sharp');
 const cloudinary = require('cloudinary').v2;
 const Tesseract = require('tesseract.js');
-// กำหนดค่า LINE Bot
-const config = {
-    channelAccessToken: 'YlQsOdAPVZDZ9ZzjfJJZ+ZsUGy8PfTrI54tAWpuolw/CbT1dRr2lMsI+OFqGn4fLkE0UHLPBQxmIEuAKtno5oycoaRAYwVIM81pheR5QieXzKOI2lLxtgoDk6FkMCV1nqor2Xv766uGjqjlvljv6GwdB04t89/1O/w1cDnyilFU=',
-    channelSecret: 'ec5dd65b9cb56ed5b24a0a54ef9a94fb'
-};
+const { Client, GatewayIntentBits } = require('discord.js');
+
+const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent] });
 
 // กําหนดค่า Cloudinary เพื่อเชื่อมต่อ cloudinary
 cloudinary.config({
@@ -21,31 +17,9 @@ cloudinary.config({
     api_secret: 'KI6Thg_n3ora-Iy2SSMsSieNVtQ' // Click 'View API Keys' above to copy your API secret
 });
 
-// สร้างตัวแปรวันที่ปัจจุบัน
-const currentDate = new Date();
-
-// แยกวัน เดือน ปี
-const day = currentDate.getDate();         // วันที่ (1 - 31)
-const month = currentDate.getMonth() + 1;  // เดือน (1 - 12), +1 เพราะ getMonth() เริ่มจาก 0
-const year = currentDate.getFullYear();    // ปี (เช่น 2024)
-const time = currentDate.getHours();
-const timeminit = currentDate.getMinutes();
-const datetime = `${day}/${month}/${year} / ${time}.${timeminit} น.`;
-const client = new line.Client(config);
 
 // Middleware สำหรับ parsing body ของ request
 app.use(bodyParser.json());
-
-// Webhook สำหรับรับข้อความจาก LINE
-app.post('/webhook', (req, res) => {
-    const events = req.body.events;
-    Promise.all(events.map(handleEvent))
-        .then((result) => res.json(result))
-        .catch((err) => {
-            console.error(err);
-            res.status(500).end();
-        });
-});
 
 // ฟังก์ชันสำหรับจัดการ event
 function handleEvent(event) {
@@ -56,39 +30,31 @@ function handleEvent(event) {
     return Promise.resolve(null);
 }
 
-function broadcastScheduledMessage(message, uploadResult11, uploadResult12, uploadResult13) {
-    return axios.post(
-        'https://api.line.me/v2/bot/message/broadcast',
-        {
-            messages: [
-                {
-                    type: 'text',
-                    text: message,
-                }, {
-                    type: "image",
-                    originalContentUrl: uploadResult11,
-                    previewImageUrl: uploadResult11
-                }, {
-                    type: "image",
-                    originalContentUrl: uploadResult12,
-                    previewImageUrl: uploadResult12
-                }, {
-                    type: "image",
-                    originalContentUrl: uploadResult13,
-                    previewImageUrl: uploadResult13
-                }
-            ],
-        },
-        {
-            headers: {
-                Authorization: `Bearer ${config.channelAccessToken}`,
-                'Content-Type': 'application/json',
-            },
-        }
-    );
-}
+async function startBot(message, uploadResult11, uploadResult12, uploadResult13) {
+    const CHANNEL_ID = '1306761640238252035'; // กำหนด Channel ID ที่ต้องการ
+    // Event เมื่อตัวบอทเชื่อมต่อและพร้อมใช้งาน
+    client.once('ready', async () => {
+        console.log('บอทพร้อมแล้ว!');
 
-cron.schedule('* * * * *', async () => {
+        const channel = client.channels.cache.get(CHANNEL_ID); // ดึง channel ที่ต้องการส่งข้อความ
+        if (!channel) {
+            console.error('ไม่พบ Channel ที่กำหนด');
+            return;
+        }
+
+        // ส่งข้อความและรูปภาพ
+        await channel.send(message);
+        await channel.send({ files: [uploadResult11] });
+        await channel.send({ files: [uploadResult12] });
+        await channel.send({ files: [uploadResult13] });
+    });
+
+    // เข้าสู่ระบบด้วย token ของบอท
+    // MTMwNjQxNDQwOTE2OTYzNzQ2OA.GpS_l8.Vx8uDO0Byu75hW_71Tp3s3sc3s1feX5aCfs3iE
+    client.login("MTMwNjcxODA4OTI0NDcwODk1NA.GlC5ZH.lPVYQuZQB84ELVsn_KB0KIcg830vwkeoov2k0E");
+}
+cron.schedule('0 0,3,6,9,12,15,18,21 * * *', async () => {
+    // cron.schedule('* * * * *', async () => {
 
     const email = "LL67565";
     const password = "Admin@67565";
@@ -128,7 +94,7 @@ cron.schedule('* * * * *', async () => {
             await page.goto("http://zabbix.cabletv.co.th/zabbix/zabbix.php?action=dashboard.view&dashboardid=388");
 
             // รอ 7 วินาทีก่อนแคปหน้าจอ
-            await delay(4000);
+            await delay(2000);
 
             // แคปหน้าจอ
             await page.screenshot({ path: "zabbix-dashboard.png" });
@@ -200,9 +166,6 @@ cron.schedule('* * * * *', async () => {
             .catch((error) => {
                 console.log(error);
             });
-        console.log("san22", uploadResult1.secure_url);
-        // console.log(uploadResult2.url);
-        // console.log(uploadResult3.url);
         const imageFiles = [
             'text1.jpg',
             'text2.jpg',
@@ -227,6 +190,15 @@ cron.schedule('* * * * *', async () => {
             const allTexts = texts.join('\n');
             console.log("ข้อความที่ได้จากภาพทั้งหมด:");
             console.log(allTexts);
+            // สร้างตัวแปรวันที่ปัจจุบัน
+            const currentDate = new Date();
+            // แยกวัน เดือน ปี
+            const day = currentDate.getDate();         // วันที่ (1 - 31)
+            const month = currentDate.getMonth() + 1;  // เดือน (1 - 12), +1 เพราะ getMonth() เริ่มจาก 0
+            const year = currentDate.getFullYear();    // ปี (เช่น 2024)
+            const time = currentDate.getHours();
+            const timeminit = currentDate.getMinutes();
+            const datetime = `${day}/${month}/${year} / ${time}.${timeminit} น.`;
             const datetime2 = ` ${datetime}`;
             const hyung = ` \nของ พี่หยง \n156.232.105.0/25 (vlan 565) \nbandwith :ปกติ ${texts[0]} 156.232.105.128/25 (vlan 568) \nbandwith :ปกติ ${texts[1]} \n`;
             const nikky = ` ของ นิกกี้ \n156.232.106.0/25 (vlan 566) \nbandwith :ปกติ ${texts[2]} 154.209.146.0/25 (vlan 567) \nbandwith :ปกติ ${texts[3]}156.232.106.128/25 (vlan 569)\nbandwith :ปกติ ${texts[4]}154.209.146.128/25 (vlan 570)\nbandwith :ปกติ ${texts[5]}\n`;
@@ -235,7 +207,7 @@ cron.schedule('* * * * *', async () => {
             const uploadResult11 = uploadResult1.secure_url;
             const uploadResult12 = uploadResult2.secure_url;
             const uploadResult13 = uploadResult3.secure_url;
-            broadcastScheduledMessage(message, uploadResult11, uploadResult12, uploadResult13)
+            startBot(message, uploadResult11, uploadResult12, uploadResult13)
                 .then(() => console.log('ส่งข้อความ Broadcast สำเร็จ'))
                 .catch((error) => console.error('เกิดข้อผิดพลาด:', error));
         }).catch(error => {
@@ -247,7 +219,6 @@ cron.schedule('* * * * *', async () => {
     }
 
 });
-
 
 // เริ่มต้นเซิร์ฟเวอร์
 const PORT = process.env.PORT || 3000;
