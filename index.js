@@ -4,34 +4,14 @@ const cron = require('node-cron');
 const puppeteer = require("puppeteer");
 const app = express();
 const sharp = require('sharp');
-const cloudinary = require('cloudinary').v2;
 const Tesseract = require('tesseract.js');
 const { Client, GatewayIntentBits } = require('discord.js');
-
+require('dotenv').config();
 const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent] });
-
-// กําหนดค่า Cloudinary เพื่อเชื่อมต่อ cloudinary
-cloudinary.config({
-    cloud_name: 'dnfcx8tdk',
-    api_key: '354162211182455',
-    api_secret: 'KI6Thg_n3ora-Iy2SSMsSieNVtQ' // Click 'View API Keys' above to copy your API secret
-});
-
-
 // Middleware สำหรับ parsing body ของ request
 app.use(bodyParser.json());
-
-// ฟังก์ชันสำหรับจัดการ event
-function handleEvent(event) {
-    if (event.type === 'message' && event.message.type === 'text') {
-        const echo = { type: 'text', text: event.message.text };
-        return client.replyMessage(event.replyToken, echo);
-    }
-    return Promise.resolve(null);
-}
-
-async function startBot(message, uploadResult11, uploadResult12, uploadResult13) {
-    const CHANNEL_ID = '1306761640238252035'; // กำหนด Channel ID ที่ต้องการ
+async function startBot(message, image1, image2, image3) {
+    const CHANNEL_ID = process.env.CHANNEL_ID; // กำหนด Channel ID ที่ต้องการ
     // Event เมื่อตัวบอทเชื่อมต่อและพร้อมใช้งาน
     client.once('ready', async () => {
         console.log('บอทพร้อมแล้ว!');
@@ -44,23 +24,19 @@ async function startBot(message, uploadResult11, uploadResult12, uploadResult13)
 
         // ส่งข้อความและรูปภาพ
         await channel.send(message);
-        await channel.send({ files: [uploadResult11] });
-        await channel.send({ files: [uploadResult12] });
-        await channel.send({ files: [uploadResult13] });
+        await channel.send({ files: [image1, image2, image3] });
     });
-
     // เข้าสู่ระบบด้วย token ของบอท
-    // MTMwNjQxNDQwOTE2OTYzNzQ2OA.GpS_l8.Vx8uDO0Byu75hW_71Tp3s3sc3s1feX5aCfs3iE
-    client.login("MTMwNjcxODA4OTI0NDcwODk1NA.GlC5ZH.lPVYQuZQB84ELVsn_KB0KIcg830vwkeoov2k0E");
+    const tokendiscord = String(process.env.DISCORD_TOKEN);
+
+    client.login(tokendiscord);
 }
-cron.schedule('0 0,3,6,9,12,15,18,21 * * *', async () => {
-    // cron.schedule('* * * * *', async () => {
+// cron.schedule('0 0,3,6,9,12,15,18,21 * * *', async () => {
+cron.schedule('* * * * *', async () => {
 
     const email = "LL67565";
     const password = "Admin@67565";
-    const image1 = './croppedM1.jpg';
-    const image2 = './croppedM2.jpg';
-    const image3 = './croppedM3.jpg';
+
     function delay(time) {
         return new Promise(function (resolve) {
             setTimeout(resolve, time)
@@ -74,28 +50,20 @@ cron.schedule('0 0,3,6,9,12,15,18,21 * * *', async () => {
                     height: 3000,
                 },
             });
-
             const page = await browser.newPage();
-
             // ไปยังหน้าเข้าสู่ระบบ
             await page.goto("http://zabbix.cabletv.co.th/zabbix/index.php");
-
             // กรอกชื่อผู้ใช้และรหัสผ่าน
             await page.type("#name", email); // แก้ไขเป็นชื่อผู้ใช้จริง
             await page.type("#password", password); // แก้ไขเป็นรหัสผ่านจริง
-
             // คลิกปุ่มล็อคอิน
             await page.click("#enter");
-
             // รอให้หน้าใหม่โหลดเสร็จ
             await page.waitForNavigation();
-
             // ไปยังหน้าที่ต้องการแคปหน้าจอหลังจากล็อคอินแล้ว
             await page.goto("http://zabbix.cabletv.co.th/zabbix/zabbix.php?action=dashboard.view&dashboardid=388");
-
             // รอ 7 วินาทีก่อนแคปหน้าจอ
-            await delay(2000);
-
+            await delay(5000);
             // แคปหน้าจอ
             await page.screenshot({ path: "zabbix-dashboard.png" });
             sharp('zabbix-dashboard.png')
@@ -130,6 +98,7 @@ cron.schedule('0 0,3,6,9,12,15,18,21 * * *', async () => {
                 .toFile('text7.jpg')
                 .then(() => {
                     console.log('ภาพคอปและบันทึกสำเร็จ!');
+                    console.log(process.env.DISCORD_TOKEN);
                 })
                 .catch(err => {
                     console.error('เกิดข้อผิดพลาด:', err);
@@ -139,33 +108,6 @@ cron.schedule('0 0,3,6,9,12,15,18,21 * * *', async () => {
 
             await browser.close();
         })();
-        const uploadResult1 = await cloudinary.uploader
-            .upload(
-                image1, {
-                public_id: 'shoes1',
-            }
-            )
-            .catch((error) => {
-                console.log(error);
-            });
-        const uploadResult2 = await cloudinary.uploader
-            .upload(
-                image2, {
-                public_id: 'shoes2',
-            }
-            )
-            .catch((error) => {
-                console.log(error);
-            });
-        const uploadResult3 = await cloudinary.uploader
-            .upload(
-                image3, {
-                public_id: 'shoes3',
-            }
-            )
-            .catch((error) => {
-                console.log(error);
-            });
         const imageFiles = [
             'text1.jpg',
             'text2.jpg',
@@ -204,10 +146,10 @@ cron.schedule('0 0,3,6,9,12,15,18,21 * * *', async () => {
             const nikky = ` ของ นิกกี้ \n156.232.106.0/25 (vlan 566) \nbandwith :ปกติ ${texts[2]} 154.209.146.0/25 (vlan 567) \nbandwith :ปกติ ${texts[3]}156.232.106.128/25 (vlan 569)\nbandwith :ปกติ ${texts[4]}154.209.146.128/25 (vlan 570)\nbandwith :ปกติ ${texts[5]}\n`;
             const sumBW = `รวม BW User = ${texts[6]}`;
             const message = datetime2 + hyung + nikky + sumBW;
-            const uploadResult11 = uploadResult1.secure_url;
-            const uploadResult12 = uploadResult2.secure_url;
-            const uploadResult13 = uploadResult3.secure_url;
-            startBot(message, uploadResult11, uploadResult12, uploadResult13)
+            const image1 = './croppedM1.jpg';
+            const image2 = './croppedM2.jpg';
+            const image3 = './croppedM3.jpg';
+            startBot(message, image1, image2, image3)
                 .then(() => console.log('ส่งข้อความ Broadcast สำเร็จ'))
                 .catch((error) => console.error('เกิดข้อผิดพลาด:', error));
         }).catch(error => {
@@ -219,7 +161,6 @@ cron.schedule('0 0,3,6,9,12,15,18,21 * * *', async () => {
     }
 
 });
-
 // เริ่มต้นเซิร์ฟเวอร์
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
