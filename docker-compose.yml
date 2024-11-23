@@ -1,14 +1,25 @@
 version: "3.8"
+
 services:
-  nodejs:
-    container_name: nodejs_puppeteer_server
+  app:
     build:
+      context: . # Build Dockerfile in the current directory
       dockerfile: Dockerfile
-      context: ./
     ports:
-      - "${PORT}:${PORT}"
-    networks:
-      - puppeteer-network
-networks:
-  puppeteer-network:
-    name: puppeteer-network
+      - "3000:3000" # Map container port 3000 to host port 3000
+    environment:
+      DISCORD_TOKEN: "${DISCORD_TOKEN}" # Pass environment variables from .env file
+      CHANNEL_ID: "${CHANNEL_ID}"
+      PORT: "${PORT}"
+    volumes:
+      - .:/usr/src/app # Bind mount current directory for live updates (optional)
+    depends_on:
+      - puppeteer
+    restart: always
+
+  puppeteer:
+    image: "browserless/chrome:latest" # Puppeteer base image with preinstalled Chrome
+    environment:
+      - ENABLE_DEBUGGER=false
+    ports:
+      - "3001:3000" # Expose debugger (optional)
